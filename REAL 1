@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frutas Vegetais & Comércio, E.I.</title>
+  <meta name="description" content="Frutas e vegetais frescos para si. Compre online com facilidade." />
+  <meta name="keywords" content="frutas, vegetais, comércio, Maputo, produtos frescos" />
+  <meta property="og:title" content="Frutas Vegetais & Comércio, E.I." />
+  <meta property="og:description" content="Frutas e vegetais frescos diretamente para si!" />
+  <meta property="og:type" content="website" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5fff5;
+      margin: 0;
+      padding-top: 60px; /* espaço para menu fixo */
+    }
+    header,
+    footer {
+      background: #4caf50;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+    nav {
+      background: #388e3c;
+      padding: 0.5rem;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+    }
+    nav a {
+      color: white;
+      margin: 0 12px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    section {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .product {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 5px #ccc;
+    }
+    .product img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    .cart {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+    .contact img {
+      max-width: 200px;
+      border-radius: 12px;
+    }
+    button {
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    .search-bar {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .search-bar input {
+      padding: 0.5rem;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .promo {
+      background: #fff3e0;
+      border-left: 6px solid #ffa000;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    form button {
+      margin-top: 1rem;
+    }
+    /* Layout produtos 2 colunas no desktop, 1 coluna mobile */
+    #catalogo .products-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    /* Feedback de adição ao carrinho */
+    #feedback {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      z-index: 110;
+    }
+    /* Botão voltar ao topo */
+    #back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Avaliações */
+    #avaliacoes {
+      max-width: 700px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #ccc;
+    }
+    #avaliacoes h3 {
+      margin-top: 0;
+    }
+    #avaliacoes ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    #avaliacoes li {
+      border-bottom: 1px solid #ddd;
+      padding: 0.5rem 0;
+    }
+    /* Responsivo */
+    @media (max-width: 600px) {
+      nav a {
+        display: block;
+        margin: 10px 0;
+      }
+      #catalogo .products-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script>
+    let cart = [];
+
+    function addToCart(product, price) {
+      // Verifica se já existe o produto no carrinho
+      const existing = cart.find(item => item.name === product);
+      if (existing) {
+        existing.quantity++;
+      } else {
+        cart.push({ name: product, price: price, quantity: 1 });
+      }
+      updateCart();
+      showFeedback(`${product} adicionado ao carrinho!`);
+    }
+
+    function updateCart() {
+      const cartList = document.getElementById('cart-list');
+      const totalPrice = document.getElementById('total-price');
+      cartList.innerHTML = '';
+
+      let total = 0;
+      cart.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${item.name} - R$${item.price.toFixed(2)} x 
+          <input type="number" min="1" value="${item.quantity}" onchange="changeQuantity(${index}, this.value)" style="width:50px" /> 
+          = R$${(item.price * item.quantity).toFixed(2)}
+          <button onclick="removeItem(${index})" style="margin-left:10px; background:#d9534f;">X</button>
+        `;
+        cartList.appendChild(li);
+        total += item.price * item.quantity;
+      });
+
+      totalPrice.textContent = `Total: R$${total.toFixed(2)}`;
+
+      // Habilita/desabilita botão finalizar
+      document.getElementById('finalize-btn').disabled = cart.length === 0;
+    }
+
+    function changeQuantity(index, value) {
+      const qty = parseInt(value);
+      if (qty < 1 || isNaN(qty)) {
+        alert('Quantidade inválida');
+        updateCart();
+        return;
+      }
+      cart[index].quantity = qty;
+      updateCart();
+    }
+
+    function removeItem(index) {
+      cart.splice(index, 1);
+      updateCart();
+    }
+
+    function finalizeOrder() {
+      if (cart.length === 0) {
+        alert('O carrinho está vazio!');
+        return;
+      }
+      let message = 'Gostaria de fazer o seguinte pedido:%0A';
+      cart.forEach(item => {
+        message += `${item.quantity}x ${item.name} - R$${(item.price * item.quantity).toFixed(2)}%0A`;
+      });
+      const url = `https://wa.me/258842193066?text=${message}`;
+      window.open(url, '_blank');
+    }
+
+    function filterProducts() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const products = document.querySelectorAll('.product');
+      products.forEach(prod => {
+        const text = prod.innerText.toLowerCase();
+        prod.style.display = text.includes(search) ? '' : 'none';
+      });
+    }
+
+    function showFeedback(text) {
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = text;
+      feedback.style.opacity = 1;
+      setTimeout(() => {
+        feedback.style.opacity = 0;
+      }, 2000);
+    }
+
+    window.addEventListener('scroll', () => {
+      const btn = document.getElementById('back-to-top');
+      if (window.scrollY > 300) {
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+
+    function backToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Frutas Vegetais & Comércio, E.I.</h1>
+    <p>Frutas e vegetais frescos diretamente para si!</p>
+  </header>
+
+  <nav>
+    <a href="#catalogo">Catálogo</a>
+    <a href="#carrinho">Carrinho</a>
+    <a href="#promocoes">Promoções</a>
+    <a href="#pedido">Pedido por Email</a>
+    <a href="#contacto">Contacto</a>
+    <a href="#sobre">Sobre</a>
+    <a href="#avaliacoes">Avaliações</a>
+    <a href="https://www.facebook.com" target="_blank" rel="noopener" title="Facebook">FB</a>
+    <a href="https://www.instagram.com" target="_blank" rel="noopener" title="Instagram">IG</a>
+    <a href="https://wa.me/258842193066" target="_blank" rel="noopener" title="WhatsApp">WA</a>
+  </nav>
+
+  <section id="catalogo">
+    <h2>Catálogo de Produtos</h2>
+    <div class="search-bar">
+      <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Pesquisar produto..." />
+    </div>
+    <div class="products-container">
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2014/02/01/17/28/apple-256261_1280.jpg" alt="Maçã" />
+        <h3>Maçã</h3>
+        <p>Preço: R$3.00 / unidade</p>
+        <button onclick="addToCart('Maçã', 3.0)">Adicionar ao Carrinho</button>
+      </div>
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2015/07/17/13/44/pear-849197_1280.jpg" alt="Pera" />
+        <h3>Pera</h3>
+        <p>Preço: R$2.50 / unidade</p>
+        <button onclick="addToCart('Pera', 2.5)">Adicionar ao Carrinho</button>
+      </div>
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2020/06/25/17/01/strawberries-5341488_1280.jpg" alt="Morangos" />
+        <h3>Morangos</h3>
+        <p>Preço: R$5.00 / unidade</p>
+        <button onclick="addToCart('Morangos', 5.0)">Adicionar ao Carrinho</button>
+      </div>
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2016/10/27/22/52/grapes-1776415_1280.jpg" alt="Uvas" />
+        <h3>Uvas</h3>
+        <p>Preço: R$4.00 / unidade</p>
+        <button onclick="addToCart('Uvas', 4.0)">Adicionar ao Carrinho</button>
+      </div>
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2018/06/07/18/04/peaches-3460485_1280.jpg" alt="Pêssegos" />
+        <h3>Pêssegos</h3>
+        <p>Preço: R$3.50 / unidade</p>
+        <button onclick="addToCart('Pêssegos', 3.5)">Adicionar ao Carrinho</button>
+      </div>
+      <div class="product">
+        <img loading="lazy" src="https://cdn.pixabay.com/photo/2017/08/14/01/25/nectarines-2630861_1280.jpg" alt="Nectarina" />
+        <h3>Nectarina</h3>
+        <p>Preço: R$3.50 / unidade</p>
+        <button onclick="addToCart('Nectarina', 3.5)">Adicionar ao Carrinho</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="carrinho">
+    <h2>Carrinho</h2>
+    <div class="cart">
+      <ul id="cart-list"></ul>
+      <p id="total-price">Total: R$0.00</p>
+      <button id="finalize-btn" onclick="finalizeOrder()" disabled>Finalizar Pedido via WhatsApp</button>
+    </div>
+  </section>
+
+  <section id="promocoes">
+    <h2>Promoções da Semana</h2>
+    <div class="promo">
+      <strong>Desconto especial:</strong> 10% off na compra de 5kg de uvas!
+    </div>
+    <div class="promo">
+      <strong>Oferta:</strong> Leve 1kg de maçã grátis a cada compra acima de 10kg!
+    </div>
+  </section>
+
+  <section id="pedido">
+    <h2>Pedido por Email</h2>
+    <form action="mailto:nhacasaanelenny@gmail.com" method="post" enctype="text/plain">
+      <label for="nome">Nome:</label>
+      <input type="text" name="nome" required />
+
+      <label for="email">Email:</label>
+      <input type="email" name="email" required />
+
+      <label for="mensagem">Mensagem ou produtos desejados:</label>
